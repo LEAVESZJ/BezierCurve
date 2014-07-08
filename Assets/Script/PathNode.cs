@@ -77,7 +77,7 @@ using UnityEditor;
                     Gizmos.DrawWireCube( curveCtrlPointPos, Vector3.one / 10.0f );
 
                     DrawCurve( startPoint, endPoint, curveCtrlPointPos );
-                    if( !Application.isPlaying )
+                    if( !Application.isPlaying && PathEditorWindow.IsDrawCurvePoint )
                     {
                         if( PathEditorWindow.IsDrawUniformCurvePoint )
                         {
