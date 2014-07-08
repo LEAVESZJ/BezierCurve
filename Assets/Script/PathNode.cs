@@ -152,10 +152,10 @@ using UnityEditor;
             Vector3 v2 = -2.0f * A + 2.0f * B;
 
             float t = 0f;
-            const float length = 0.2f;
+            const float distance = 0.2f;
             while( t <= 1.0f )
             {
-                t += length / ( t * v1 + v2 ).magnitude;
+                t += distance / ( t * v1 + v2 ).magnitude;
 
                 Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
 
