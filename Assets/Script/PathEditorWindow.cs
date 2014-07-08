@@ -14,6 +14,7 @@ public class PathEditorWindow : EditorWindowBase
     private Vector2 scrollPosition  = Vector2.zero;
 
     static public bool IsMultiOperateCurveCtrlPoint = true;
+    static public bool IsDrawUniformCurvePoint      = true;
 
     /// <summary>
     /// 初期化.
@@ -66,6 +67,10 @@ public class PathEditorWindow : EditorWindowBase
         GUILayout.Space( SeparateSpace );
 
         ButtonDeleteNode();
+
+        CheckBoxToggleIsDrawUniformCurvePoint();
+
+        GUILayout.Space( SeparateSpace );
 
         GUILayout.Label( "All Path Node GameObjects", EditorStyles.boldLabel );
 
@@ -446,6 +451,20 @@ public class PathEditorWindow : EditorWindowBase
             {
                 EditorUtility.DisplayDialog( WindowName, "PathNodeのGameObjectが選択されていません。", "OK" );
             }
+        }
+    }
+
+    /// <summary>
+    /// CheckBox : 曲線ポイントの等距離描画
+    /// </summary>
+    private void CheckBoxToggleIsDrawUniformCurvePoint()
+    {
+        bool old = IsDrawUniformCurvePoint;
+        IsDrawUniformCurvePoint = EditorGUILayout.Toggle( "曲線ポイントの等距離描画", IsDrawUniformCurvePoint );
+
+        if( old != IsDrawUniformCurvePoint )
+        {
+            SceneView.RepaintAll();
         }
     }
 

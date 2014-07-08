@@ -79,7 +79,14 @@ using UnityEditor;
                     DrawCurve( startPoint, endPoint, curveCtrlPointPos );
                     if( !Application.isPlaying )
                     {
-                        DrawPoint( startPoint, endPoint, curveCtrlPointPos );
+                        if( PathEditorWindow.IsDrawUniformCurvePoint )
+                        {
+                            DrawUniformPoint( startPoint, endPoint, curveCtrlPointPos );
+                        }
+                        else
+                        {
+                            DrawPoint( startPoint, endPoint, curveCtrlPointPos );
+                        }
                     }
                 }
             }
@@ -114,9 +121,26 @@ using UnityEditor;
         }
 
         /// <summary>
-        /// Draws the point.
+        /// Draw Point
         /// </summary>
         private void DrawPoint( Vector3 startPoint, Vector3 endPoint, Vector3 curveCtrlPoint )
+        {
+            float t = 0;
+            float deltaT = 0.05f;
+            while( t <= 1.0f )
+            {
+                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
+                
+                Gizmos.DrawSphere( lineStart, 0.02f );
+
+                t += deltaT;
+            }
+        }
+
+        /// <summary>
+        /// Draw Uniform Point
+        /// </summary>
+        private void DrawUniformPoint( Vector3 startPoint, Vector3 endPoint, Vector3 curveCtrlPoint )
         {
             // Reference : http://gamedev.stackexchange.com/questions/27056/how-to-achieve-uniform-speed-of-movement-on-a-bezier-curve
 
@@ -127,13 +151,13 @@ using UnityEditor;
             Vector3 v1 =  2.0f * A - 4.0f * B + 2.0f * C;
             Vector3 v2 = -2.0f * A + 2.0f * B;
 
-            float T = 0f;
-            const float L = 0.2f;
-            while( T <= 1.0f )
+            float t = 0f;
+            const float length = 0.2f;
+            while( t <= 1.0f )
             {
-                T += L / ( T * v1 + v2 ).magnitude;
+                t += length / ( t * v1 + v2 ).magnitude;
 
-                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, T );
+                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
 
                 Gizmos.DrawSphere( lineStart, 0.02f );
             }
