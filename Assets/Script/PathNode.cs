@@ -1,18 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using Ranmaru.GameComponent.City;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace Ranmaru.GameComponent.City
-{
     /// <summary>
     /// パスノード
     /// </summary>
-    public class PathNode : GameBehaviour
+    public class PathNode : MonoBehaviour
     {
         /// <summary>
         /// ノードID
@@ -23,37 +20,6 @@ namespace Ranmaru.GameComponent.City
         {
             get{ return nodeID; }
             set{ nodeID = value; }
-        }
-
-        /// <summary>
-        /// ノードType
-        /// </summary>
-        public enum NodeType : int
-        {
-            Normal,
-            Special
-        }
-
-        /// <summary>
-        /// ノードType
-        /// </summary>
-        [SerializeField]
-        private NodeType nodeType;
-        public NodeType Type
-        {
-            get{ return nodeType; }
-            set{ nodeType = value; }
-        }
-
-        /// <summary>
-        /// オブジェクト生成時の出現ノードであるか
-        /// </summary>
-        [SerializeField]
-        private bool generationNode = false;
-        public bool GenerationNode
-        {
-            get{ return generationNode; }
-            set{ generationNode = value; }
         }
 
         /// <summary>
@@ -77,43 +43,8 @@ namespace Ranmaru.GameComponent.City
         /// </summary>
         private void OnDrawGizmos()
         {
-            DrawNodeID();
-            DrawGenerateNode();
             DrawPath();
-        }
-
-        /// <summary>
-        /// Draws the node ID.
-        /// </summary>
-        static public bool EnablePathNodeName = false;
-        private void DrawNodeID()
-        {
-            if( !EnablePathNodeName ) return;
-
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.black;
-            style.fontSize = 10;
-
-            Handles.Label( this.gameObject.transform.position, TerritoryTools.GetNodeNameByID( nodeID ), style );
-        }
-
-        /// <summary>
-        /// Draws the generate node.
-        /// </summary>
-        static public bool EnableGenerateNode = true;
-        private void DrawGenerateNode()
-        {
-            if( !EnableGenerateNode ) return;
-
-            GUIStyle style = new GUIStyle();
-            style.fontStyle = FontStyle.Bold;
-            style.normal.textColor = Color.cyan;
-            style.fontSize = 10;
-
-            if( generationNode )
-            {
-                Handles.Label( this.gameObject.transform.position, "Generate\nNode", style );
-            }
+            DrawPathName();
         }
 
         /// <summary>
@@ -124,34 +55,32 @@ namespace Ranmaru.GameComponent.City
             // 自身がつながっているパス間に線を描画
             for( int i = 0; i < nodeInfo.Count; ++i )
             {
-                if( nodeInfo[ i ] == null || nodeInfo[ i ].node == null ) continue;
-                
+                if( nodeInfo[ i ] == null || nodeInfo[ i ].node == null )
+                {
+                    continue;
+                }
+
                 Vector3 startPoint = transform.position;
                 Vector3 endPoint   = nodeInfo[ i ].node.transform.position;
-                
-                if( this.nodeType == NodeType.Special || nodeInfo[ i ].node.Type == NodeType.Special )
-                {
-                    Gizmos.color = IsSelected ? Color.red : Color.magenta;
-                }
-                else
-                {
-                    Gizmos.color = IsSelected ? Color.red : Color.blue;
-                }
-                
+
+                Gizmos.color = IsSelected ? Color.yellow : Color.cyan;
+
                 if( nodeInfo[ i ].pathType == PathNodeInfo.PathType.Straight )
                 {
                     DrawStraight( startPoint, endPoint );
                 }
                 else if( nodeInfo[ i ].pathType == PathNodeInfo.PathType.Curve )
                 {
-                    Vector3 curveCtrlPointPos = nodeInfo[ i ].curveCtrlPointPos;
-                    curveCtrlPointPos.z = CityController.GetFixedPosZ( curveCtrlPointPos.y );
-                    nodeInfo[ i ].curveCtrlPointPos = curveCtrlPointPos;
-                    
+                    Vector3 curveCtrlPointPos = nodeInfo[ i ].CurveCtrlPointPos;
+                    nodeInfo[ i ].CurveCtrlPointPos = curveCtrlPointPos;
+
                     Gizmos.DrawWireCube( curveCtrlPointPos, Vector3.one / 10.0f );
-                    
+
                     DrawCurve( startPoint, endPoint, curveCtrlPointPos );
-                    if( !Application.isPlaying ) DrawPoint( startPoint, endPoint, curveCtrlPointPos );
+                    if( !Application.isPlaying )
+                    {
+                        DrawPoint( startPoint, endPoint, curveCtrlPointPos );
+                    }
                 }
             }
         }
@@ -171,17 +100,16 @@ namespace Ranmaru.GameComponent.City
         /// </summary>
         private void DrawCurve( Vector3 startPoint, Vector3 endPoint, Vector3 curveCtrlPoint )
         {
-            int T = 30;
-            BezierCurve curve = new BezierCurve( (float)T );
-            for( int t = 0; t < T; ++t )
+            float t = 0;
+            float deltaT = 0.05f;
+            while( t <= 1.0f )
             {
-                Vector3 lineStart = curve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, (float)t );
-                Vector3 lineEnd   = curve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, (float)( t + 1 ) );
-
-                lineStart.z = CityController.GetFixedPosZ( lineStart.y );
-                lineEnd.z   = CityController.GetFixedPosZ( lineEnd.y );
+                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
+                Vector3 lineEnd   = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t + deltaT );
 
                 Gizmos.DrawLine( lineStart, lineEnd );
+
+                t += deltaT;
             }
         }
 
@@ -201,13 +129,11 @@ namespace Ranmaru.GameComponent.City
 
             float T = 0f;
             const float L = 0.2f;
-            BezierCurve curve = new BezierCurve( 1.0f );
             while( T <= 1.0f )
             {
                 T += L / ( T * v1 + v2 ).magnitude;
 
-                Vector3 lineStart = curve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, T );
-                lineStart.z = CityController.GetFixedPosZ( lineStart.y );
+                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, T );
 
                 Gizmos.DrawSphere( lineStart, 0.02f );
             }
@@ -226,30 +152,45 @@ namespace Ranmaru.GameComponent.City
                               UnityEditor.Selection.activeGameObject.transform.parent.gameObject == this.gameObject ) );
             }
         }
-#endif
 
         /// <summary>
-        /// 線分とこのノードが交差したかをチェック
+        /// Draw Path Name
         /// </summary>
-        /// <returns>The node radius.</returns>
-        public bool Intersect( Vector3 origin, Vector3 dir, float dist )
+        private void DrawPathName()
         {
-            SphereCollider collider = GetComponentInChildren<SphereCollider>();
-            if (collider != null)
-            {
-                // ゼロベクトルの場合、originがバウンディングボックスの中に含まれているかどうかでチェック
-                if (dir.sqrMagnitude < 0.000001f || dist < 0.000001f)
-                {
-                    return collider.bounds.Contains(origin); 
-                }
-
-                RaycastHit hitInfo = new RaycastHit();
-                return collider.Raycast(new Ray( origin, dir.normalized ), out hitInfo, dist);
-            }
-
-            return false;
-
+            Handles.Label( this.gameObject.transform.position, GetNodeNameByID( nodeID ) );
         }
+
+        /// <summary>
+        /// NodeIDからNode名を取得する
+        /// </summary>
+        static public string GetNodeNameByID( int id )
+        {
+            return "Node" + id.ToString( "D3" );
+        }
+
+        /// <summary>
+        /// PathNodeを生成する
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="pos"></param>
+        /// <param name="objName"></param>
+        /// <param name="nodeID"></param>
+        static public GameObject CreatePathNode( Transform parent, Vector3 pos, string objName, int nodeID )
+        {
+            GameObject pathNodePrefab = (GameObject)AssetDatabase.LoadAssetAtPath( "Assets/Prefab/PathNode.prefab", typeof( GameObject ) );
+            GameObject pathNodeObj = Instantiate( pathNodePrefab ) as GameObject;
+            pathNodeObj.transform.parent = parent;
+            pathNodeObj.transform.position = pos;
+            pathNodeObj.name = objName;
+
+            PathNode pathNode = pathNodeObj.GetComponent<PathNode>();
+            pathNode.NodeID = nodeID;
+
+            return pathNodeObj;
+        }
+#endif
+
     }
 
     /// <summary>
@@ -277,7 +218,7 @@ namespace Ranmaru.GameComponent.City
         /// <summary>
         /// 曲線パスの制御点位置を取得する.
         /// </summary>
-        public Vector3 curveCtrlPointPos
+        public Vector3 CurveCtrlPointPos
         {
             get
             {
@@ -295,4 +236,3 @@ namespace Ranmaru.GameComponent.City
 
         public GameObject curveCtrlPointObj;   // 曲線パスの制御点.
     }
-}
