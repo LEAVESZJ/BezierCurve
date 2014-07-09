@@ -13,9 +13,9 @@ public class PathEditorWindow : EditorWindowBase
     private Vector2 allScrollPos    = Vector2.zero;
     private Vector2 scrollPosition  = Vector2.zero;
 
-    static public bool IsMultiOperateCurveCtrlPoint = true;
+    static public bool IsMultiOperateCurveCtrlPoint = false;
     static public bool IsDrawCurvePoint             = false;
-    static public bool IsDrawUniformCurvePoint      = true;
+    static public bool IsDrawUniformCurvePoint      = false;
 
     /// <summary>
     /// 初期化.
@@ -542,7 +542,7 @@ public class PathEditorWindow : EditorWindowBase
 
         this.scrollPosition = GUILayout.BeginScrollView( this.scrollPosition );
 
-        const int columnNum = 5;
+        const int columnNum = 4;
         int linei = 0, columni = 0;
         while( true )
         {

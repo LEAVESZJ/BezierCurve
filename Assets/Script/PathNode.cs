@@ -77,7 +77,7 @@ using UnityEditor;
                     Gizmos.DrawWireCube( curveCtrlPointPos, Vector3.one / 10.0f );
 
                     DrawCurve( startPoint, endPoint, curveCtrlPointPos );
-                    if( !Application.isPlaying && PathEditorWindow.IsDrawCurvePoint )
+                    if( PathEditorWindow.IsDrawCurvePoint )
                     {
                         if( PathEditorWindow.IsDrawUniformCurvePoint )
                         {
@@ -111,8 +111,8 @@ using UnityEditor;
             float deltaT = 0.05f;
             while( t <= 1.0f )
             {
-                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
-                Vector3 lineEnd   = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t + deltaT );
+                Vector3 lineStart = BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t );
+                Vector3 lineEnd   = BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t + deltaT );
 
                 Gizmos.DrawLine( lineStart, lineEnd );
 
@@ -129,7 +129,7 @@ using UnityEditor;
             float deltaT = 0.05f;
             while( t <= 1.0f )
             {
-                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
+                Vector3 lineStart = BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t );
                 
                 Gizmos.DrawSphere( lineStart, 0.02f );
 
@@ -142,24 +142,19 @@ using UnityEditor;
         /// </summary>
         private void DrawUniformPoint( Vector3 startPoint, Vector3 endPoint, Vector3 curveCtrlPoint )
         {
-            // Reference : http://gamedev.stackexchange.com/questions/27056/how-to-achieve-uniform-speed-of-movement-on-a-bezier-curve
-
-            Vector3 A = startPoint;
-            Vector3 B = curveCtrlPoint;
-            Vector3 C = endPoint;
-
-            Vector3 v1 =  2.0f * A - 4.0f * B + 2.0f * C;
-            Vector3 v2 = -2.0f * A + 2.0f * B;
-
             float t = 0f;
             const float distance = 0.2f;
             while( t <= 1.0f )
             {
-                t += distance / ( t * v1 + v2 ).magnitude;
+                float deltaT =
+                    BezierCurve.GetUniformDeltaTOnQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t, distance );
+                
+                t += deltaT;
 
-                Vector3 lineStart = BezierCurve.GetQuadraticCurvesPoint( startPoint, endPoint, curveCtrlPoint, t );
+                Vector3 spherePos =
+                    BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t );
 
-                Gizmos.DrawSphere( lineStart, 0.02f );
+                Gizmos.DrawSphere( spherePos, 0.02f );
             }
         }
 

@@ -19,6 +19,8 @@ public class PathNodeEditor : Editor
         {
             for( int i = 0; i < targetPathNode.NodeInfo.Count; ++i )
             {
+                if( targetPathNode.NodeInfo[ i ].pathType == PathNodeInfo.PathType.Straight ) continue;
+
                 Vector3 oldPos = targetPathNode.NodeInfo[ i ].CurveCtrlPointPos;
 
                 targetPathNode.NodeInfo[ i ].CurveCtrlPointPos =
