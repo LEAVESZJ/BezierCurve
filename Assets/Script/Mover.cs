@@ -4,13 +4,12 @@ using System.Collections;
 public class Mover : MonoBehaviour
 {
     [SerializeField]
-    private PathNode        startNode;
-
-    [SerializeField]
     private float           moveSpeed = 1.0f;
 
     [SerializeField]
     private bool            isUniformMove = false;
+
+    private PathNode        startNode;
 
     private PathNode        moveFromNode;
     private PathNodeInfo    moveToNode;
@@ -98,6 +97,9 @@ public class Mover : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
+        // ランダムでStartNodeを選択する
+        Object[] pathNodeObjs = GameObject.FindObjectsOfType<PathNode>();
+        startNode = (PathNode)pathNodeObjs[ Random.Range( 0, pathNodeObjs.Length ) ];
     }
 
     // Update is called once per frame
