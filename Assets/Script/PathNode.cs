@@ -76,7 +76,15 @@ using UnityEditor;
 
                     Gizmos.DrawWireCube( curveCtrlPointPos, Vector3.one / 10.0f );
 
-                    DrawCurve( startPoint, endPoint, curveCtrlPointPos );
+                    if( PathEditorWindow.IsDrawUniformCurvePoint )
+                    {
+                        DrawUniformCurve( startPoint, endPoint, curveCtrlPointPos );
+                    }
+                    else
+                    {
+                        DrawCurve( startPoint, endPoint, curveCtrlPointPos );
+                    }
+
                     if( PathEditorWindow.IsDrawCurvePoint )
                     {
                         if( PathEditorWindow.IsDrawUniformCurvePoint )
@@ -113,6 +121,30 @@ using UnityEditor;
             {
                 Vector3 lineStart = BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t );
                 Vector3 lineEnd   = BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t + deltaT );
+
+                Gizmos.DrawLine( lineStart, lineEnd );
+
+                t += deltaT;
+            }
+        }
+
+        /// <summary>
+        /// Draw Uniform Curve
+        /// </summary>
+        private void DrawUniformCurve( Vector3 startPoint, Vector3 endPoint, Vector3 curveCtrlPoint )
+        {
+            float t = 0f;
+            const float distance = 0.2f;
+            while( t <= 1.0f )
+            {
+                float deltaT =
+                    BezierCurve.GetUniformDeltaTOnQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t, distance );
+
+                Vector3 lineStart =
+                    BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t );
+
+                Vector3 lineEnd =
+                    BezierCurve.GetQuadraticCurvePoint( startPoint, endPoint, curveCtrlPoint, t + deltaT );
 
                 Gizmos.DrawLine( lineStart, lineEnd );
 
